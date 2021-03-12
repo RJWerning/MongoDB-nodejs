@@ -55,6 +55,17 @@ async function main() {
         assert.strict(addedItem._id);
         const addedItemQuery = await circulationRepo.getById(addedItem._id);
         assert.deepStrictEqual(addedItemQuery, addedItem);
+
+        const updatedItem = await circulationRepo.update(addedItem._id, {
+            ...addedItem,
+            Newspaper: 'Richs Newspaper',
+        });
+        // This assert fails, even though it's looking at the updatedItem that was returned
+        assert.deepStrictEqual(updatedItem.Newspaper, 'Richs Newspaper');
+
+        const updatedItemQuery = await circulationRepo.getById(updatedItem._id);
+        console.log('updatedItemQuery', updatedItemQuery);
+        assert.deepStrictEqual(updatedItemQuery.Newspaper, 'Richs Newspaper');
     } catch (error) {
         console.log(error);
     } finally {

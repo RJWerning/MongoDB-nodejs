@@ -56,3 +56,18 @@
 -   Find is simply a cursor, doesn't actually return items.
 -   toArray() must be await as this is where the work is done, not at the find()
 -   Asserts toss errors, so run cleanup in a try/finally block
+
+Get
+
+-   Find is simply a cursor, doesn't actually return items.
+-   toArray() must be await as this is where the work is done, not at the find()
+-   Asserts toss errors, so run cleanup in a try/finally block
+
+Filter
+
+-   Assert on comparing objects, need to do deepStringEqual here, otherwise get an error: AssertionError [ERR_ASSERTION]: Values have same structure but are not reference-equal:
+
+Update
+
+-   Note: findOneAndReplace returns the 'find' not the 'replace' values by default
+-   To return the 'replace' object you need to include params {returnOriginal: false}
