@@ -1,4 +1,6 @@
 const MongoClient = require('mongodb').MongoClient;
+const assert = require('assert');
+
 const circulationRepo = require('./repos/circulationRepo');
 const data = require('./circulation.json');
 
@@ -9,13 +11,23 @@ async function main() {
     const client = new MongoClient(url);
     await client.connect();
 
+    // Wire up our app.js so it's more of a test harness for our repository, so we'll use
+    //  assert to test that everything worked correctly.
+    // Note: course uses assert.equal, but this gives a warning as it's been deprecated.
+    //  So I chose to go with the new way of strictEqual which may cause me issues later
+
     const results = await circulationRepo.loadData(data);
-    console.log(results.insertedCount, results.ops);
+    assert.strictEqual(data.length, results.insertedCount);
 
     // admin object allows us to do introspection on our server
     const admin = client.db(dbName).admin();
-    // console.log(await admin.serverStatus());
+
+    // For the sake of testing, we're going to drop the database after we load it.
+    // Otherwise we'll keep adding & updating records every time.
+    await client.db(dbName).dropDatabase();
     console.log(await admin.listDatabases());
+
+    client.close();
 }
 
 main();
