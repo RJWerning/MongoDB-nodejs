@@ -66,6 +66,12 @@ async function main() {
         const updatedItemQuery = await circulationRepo.getById(updatedItem._id);
         console.log('updatedItemQuery', updatedItemQuery);
         assert.deepStrictEqual(updatedItemQuery.Newspaper, 'Richs Newspaper');
+
+        const removed = await circulationRepo.remove(addedItem._id);
+        assert.strict(removed);
+
+        const removedQuery = await circulationRepo.getById(addedItem._id);
+        assert.strictEqual(removedQuery, null);
     } catch (error) {
         console.log(error);
     } finally {
