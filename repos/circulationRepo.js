@@ -1,4 +1,4 @@
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectID } = require('mongodb');
 
 const url = 'mongodb://localhost:27017';
 const dbName = 'circulation';
@@ -20,7 +20,10 @@ function circulationRepo() {
         });
     }
 
-    function get() {
+    // initial get did not have the query param
+    // Added query param to allow for filtering
+    // Added limit param to allow limiting # of records
+    function get(query, limit) {
         return new Promise(async (resolve, reject) => {
             const client = new MongoClient(url);
             try {
@@ -28,10 +31,52 @@ function circulationRepo() {
                 const db = client.db(dbName);
 
                 // Find is simply a cursor, doesn't actually return items.
-                const items = db.collection('newspapers').find();
+                let items = db.collection('newspapers').find(query);
+                // collection.find({}).project({ a: 1 })                          // Create a projection of field a
+                // collection.find({}).skip(1).limit(10)                          // Skip 1 and limit 10
+                // collection.find({}).batchSize(5)                               // Set batchSize on cursor to 5
+                // collection.find({}).filter({ a: 1 })                           // Set query on the cursor
+                // collection.find({}).comment('add a comment')                   // Add a comment to the query, allowing to correlate queries
+                // collection.find({}).addCursorFlag('tailable', true)            // Set cursor as tailable
+                // collection.find({}).addCursorFlag('oplogReplay', true)         // Set cursor as oplogReplay
+                // collection.find({}).addCursorFlag('noCursorTimeout', true)     // Set cursor as noCursorTimeout
+                // collection.find({}).addCursorFlag('awaitData', true)           // Set cursor as awaitData
+                // collection.find({}).addCursorFlag('exhaust', true)             // Set cursor as exhaust
+                // collection.find({}).addCursorFlag('partial', true)             // Set cursor as partial
+                // collection.find({}).addQueryModifier('$orderby', { a: 1 })     // Set $orderby {a:1}
+                // collection.find({}).max(10)                                    // Set the cursor max
+                // collection.find({}).maxTimeMS(1000)                            // Set the cursor maxTimeMS
+                // collection.find({}).min(100)                                   // Set the cursor min
+                // collection.find({}).returnKey(10)                              // Set the cursor returnKey
+                // collection.find({}).setReadPreference(ReadPreference.PRIMARY)  // Set the cursor readPreference
+                // collection.find({}).showRecordId(true)                         // Set the cursor showRecordId
+                // collection.find({}).sort([['a', 1]])                           // Sets the sort order of the cursor query
+                // collection.find({}).hint('a_1')                                // Set the cursor hint
+
+                if (limit > 0) {
+                    items = items.limit(limit);
+                }
 
                 // This must be await as this is where the work is done, not at the find()
                 resolve(await items.toArray());
+                client.close();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    function getById(id) {
+        return new Promise(async (resolve, reject) => {
+            const client = new MongoClient(url);
+            try {
+                await client.connect();
+                const db = client.db(dbName);
+
+                // remember that _id is an object in Mongo, typically we'll have the string representation not the object
+                //  so we need to convert it for the find to locate it
+                const item = await db.collection('newspapers').findOne({ _id: ObjectID(id) });
+                resolve(item);
                 client.close();
             } catch (error) {
                 reject(error);
@@ -53,7 +98,7 @@ function circulationRepo() {
     //     });
     // }
 
-    return { loadData, get };
+    return { loadData, get, getById };
 }
 
 module.exports = circulationRepo();

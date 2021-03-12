@@ -21,8 +21,24 @@ async function main() {
         const results = await circulationRepo.loadData(data);
         assert.strictEqual(data.length, results.insertedCount);
 
+        // Get all records
         const getData = await circulationRepo.get();
         assert.strictEqual(data.length, getData.length);
+
+        // Get 1 record
+        const filterData = await circulationRepo.get({ Newspaper: getData[4].Newspaper });
+        // need to do deepStringEqual here, otherwise get an error. Need to compare object contents
+        // AssertionError [ERR_ASSERTION]: Values have same structure but are not reference-equal:
+        assert.deepStrictEqual(filterData[0], getData[4]);
+
+        // Get with a limit of 3 records
+        const limitData = await circulationRepo.get({}, 3);
+        assert.strictEqual(limitData.length, 3);
+
+        // GetById
+        const id = getData[4]._id.toString();
+        const byId = await circulationRepo.getById(id);
+        assert.deepStrictEqual(byId, getData[4], 'GetById');
     } catch (error) {
         console.log(error);
     } finally {
