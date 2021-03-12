@@ -52,4 +52,7 @@
 ### Chapter 3: Working with CRUD
 
 -   Wire up our app.js so it's more of a test harness for our repository
-    Add asserts, populate db then delete it all
+-   Add asserts, do testing of CRUD then delete the collection so we can rerun tests
+-   Find is simply a cursor, doesn't actually return items.
+-   toArray() must be await as this is where the work is done, not at the find()
+-   Asserts toss errors, so run cleanup in a try/finally block

@@ -20,7 +20,40 @@ function circulationRepo() {
         });
     }
 
-    return { loadData };
+    function get() {
+        return new Promise(async (resolve, reject) => {
+            const client = new MongoClient(url);
+            try {
+                await client.connect();
+                const db = client.db(dbName);
+
+                // Find is simply a cursor, doesn't actually return items.
+                const items = db.collection('newspapers').find();
+
+                // This must be await as this is where the work is done, not at the find()
+                resolve(await items.toArray());
+                client.close();
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    // function get() {
+    //     return new Promise(async (resolve, reject) => {
+    //         const client = new MongoClient(url);
+    //         try {
+    //             await client.connect();
+    //             const db = client.db(dbName);
+    //             ...
+    //             client.close();
+    //         } catch (error) {
+    //             reject(error);
+    //         }
+    //     });
+    // }
+
+    return { loadData, get };
 }
 
 module.exports = circulationRepo();
